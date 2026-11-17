@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>予約デモ｜お客様画面（LINE）</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{--c:#2E86AB;--soft:color-mix(in srgb,var(--c) 11%,white);--mid:color-mix(in srgb,var(--c) 28%,white);--ink:#1f2933;--sub:#6b7785;--line:#e3e8ee}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Noto Sans JP',system-ui,sans-serif;background:#f1f4f7;color:var(--ink);font-size:14px;line-height:1.55;-webkit-text-size-adjust:100%}
+button{font-family:inherit;cursor:pointer;border:0;background:none;color:inherit;font-size:inherit}
+.top{background:#fff;border-bottom:1px solid var(--line);position:sticky;top:0;z-index:20}
+.top-in{max-width:980px;margin:0 auto;padding:10px 14px 0}
+.brand{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.brand b{font-size:15px}.brand small{color:var(--sub);font-size:11px}
+.chips{display:flex;gap:6px;overflow-x:auto;padding:10px 0 8px;scrollbar-width:none}
+.chips::-webkit-scrollbar{display:none}
+.chip{flex:none;padding:6px 13px;border-radius:99px;border:1.5px solid var(--line);background:#fff;font-weight:500;font-size:13px;white-space:nowrap}
+.chip.on{background:var(--c);border-color:var(--c);color:#fff}
+.tabs{display:flex;gap:2px}
+.tab{flex:1;padding:9px 4px;font-weight:500;color:var(--sub);border-bottom:3px solid transparent;font-size:13px}
+.tab.on{color:var(--c);border-bottom-color:var(--c);font-weight:700}
+main{max-width:980px;margin:0 auto;padding:16px 12px 70px}
+/* phone */
+.stage{display:flex;gap:22px;justify-content:center;align-items:flex-start;flex-wrap:wrap}
+.phone{width:100%;max-width:390px;background:#dfe6ee;border-radius:26px;overflow:hidden;box-shadow:0 10px 36px rgba(20,40,70,.18);border:1px solid #cfd8e2;min-height:640px;display:flex;flex-direction:column}
+.lbar{background:#fff;padding:10px 12px;display:flex;align-items:center;gap:10px;border-bottom:1px solid var(--line)}
+.back{font-size:24px;line-height:1;width:26px;color:var(--sub)}
+.av{width:36px;height:36px;border-radius:50%;background:var(--soft);display:grid;place-items:center;font-size:19px}
+.lbar b{display:block;font-size:14px;line-height:1.2}.lbar small{font-size:11px;color:var(--sub)}
+.chat{flex:1;padding:14px 12px 22px;display:flex;flex-direction:column;gap:12px;overflow-y:auto}
+.bub{background:#fff;border-radius:4px 16px 16px 16px;padding:10px 13px;max-width:88%;box-shadow:0 1px 2px rgba(0,0,0,.06);white-space:pre-wrap;font-size:13.5px}
+.card{background:#fff;border-radius:14px;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,.08)}
+.card-h{background:var(--c);color:#fff;font-weight:700;padding:11px 14px}
+.card-b{padding:12px;display:flex;flex-direction:column;gap:8px}
+.pbtn{background:var(--c);color:#fff;font-weight:700;padding:11px;border-radius:9px;text-align:center;width:100%}
+.pbtn:active{opacity:.85}.pbtn.g{background:#27AE60}.pbtn.r{background:#E74C3C}.pbtn.v{background:#8E44AD}
+.pbtn.ghost{background:#fff;color:var(--c);border:1.5px solid var(--c)}
+.pbtn:disabled{background:#c5ccd3;cursor:not-allowed}
+.steps{display:flex;gap:4px;font-size:10.5px;color:var(--sub);text-align:center}
+.steps div{flex:1;padding-top:6px;border-top:3px solid var(--line)}
+.steps .d{border-top-color:var(--c);color:var(--c);font-weight:700}
+.item{display:flex;justify-content:space-between;gap:10px;align-items:center;text-align:left;padding:11px 12px;border:1.5px solid var(--line);border-radius:11px;width:100%;background:#fff}
+.item:hover,.item.on{border-color:var(--c);background:var(--soft)}
+.item b{display:block;font-size:14px}.item small{color:var(--sub);font-size:12px;display:block}
+.price{font-weight:700;white-space:nowrap;color:var(--c)}
+.week{display:flex;gap:5px}
+.wk{display:flex;gap:6px;align-items:center;justify-content:space-between;font-size:12px;color:var(--sub)}
+.wk button{padding:3px 10px;border:1px solid var(--line);border-radius:7px;background:#fff}
+.wk button:disabled{opacity:.35}
+.day{flex:1;border:1.5px solid var(--line);background:#fff;border-radius:10px;padding:6px 0;text-align:center;font-size:11px;line-height:1.35}
+.day b{display:block;font-size:15px}.day i{font-style:normal;font-size:10px;color:var(--sub)}
+.day.on{background:var(--c);border-color:var(--c);color:#fff}.day.on i{color:#fff}
+.day:disabled{background:#f1f3f5;color:#aab2bb;cursor:not-allowed}
+.sun{color:#e05a5a}.sat{color:#3b82c4}.day.on .sun,.day.on .sat{color:#fff}
+.times{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
+.tm{padding:9px 0;border:1.5px solid var(--c);border-radius:9px;color:var(--c);font-weight:700;background:#fff}
+.tm.on{background:var(--c);color:#fff}
+.sum{background:var(--soft);border-radius:11px;padding:11px 13px;font-size:13px;display:grid;grid-template-columns:64px 1fr;gap:4px 8px}
+.sum span{color:var(--sub)}
+textarea{width:100%;border:1.5px solid var(--line);border-radius:10px;padding:9px;font:inherit;resize:vertical;min-height:68px}
+label.l{font-size:12px;color:var(--sub);font-weight:500}
+.ok{font-size:34px;text-align:center}
+.mini{font-size:12px;color:var(--sub)}
+.tag{display:inline-block;font-size:10.5px;padding:1px 7px;border-radius:99px;background:var(--mid);color:#10324a;font-weight:700}
+.side{flex:1;min-width:260px;max-width:520px;display:flex;flex-direction:column;gap:12px}
+.panel{background:#fff;border:1px solid var(--line);border-radius:14px;padding:14px}
+.panel h3{font-size:14px;margin-bottom:8px}
+.panel ul{padding-left:18px;color:#3d4a57;font-size:13px}.panel li{margin:3px 0}
+/* admin */
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin-bottom:12px}
+.stat{background:#fff;border:1px solid var(--line);border-radius:13px;padding:12px}
+.stat small{color:var(--sub);font-size:11.5px}.stat b{display:block;font-size:24px;color:var(--c);line-height:1.2}
+.dnav{display:flex;align-items:center;gap:10px;margin:4px 0 10px}
+.dnav button{padding:5px 12px;border:1px solid var(--line);background:#fff;border-radius:8px}
+.dnav b{font-size:15px}
+.scroll{overflow-x:auto;background:#fff;border:1px solid var(--line);border-radius:12px}
+table{border-collapse:collapse;width:100%;font-size:12.5px}
+th,td{padding:6px 8px;border-bottom:1px solid #edf0f3;text-align:left;white-space:nowrap}
+th{background:#f6f8fa;font-weight:700;position:sticky;top:0}
+.sheet th{background:#0f9d58;color:#fff;font-weight:500}
+.sheet tr.me td{background:#fff7d6;font-weight:700}
+.grid td.t{color:var(--sub);width:56px;background:#fafbfc}
+.cb{background:var(--mid);border-radius:6px;padding:3px 7px;font-size:11.5px;color:#10324a}
+.cm{background:var(--c);color:#fff;border-radius:6px;padding:3px 7px;font-size:11.5px;font-weight:700}
+.cf{color:#b5bec7;font-size:11.5px}
+.cols{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:14px;margin-top:14px}
+pre{background:#14202b;color:#d6e4f0;border-radius:11px;padding:12px;font-size:11.5px;overflow:auto;line-height:1.55}
+.cmp td:first-child,.cmp th:first-child{position:sticky;left:0;background:#fff;font-weight:700}
+.cmp th:first-child{background:#f6f8fa}
+.cmp .cur{background:var(--soft)}
+.kw{display:flex;flex-wrap:wrap;gap:6px}.kw span{background:var(--soft);padding:4px 10px;border-radius:99px;font-size:12.5px}
+.toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:#222;color:#fff;padding:9px 16px;border-radius:99px;font-size:13px;z-index:50;opacity:0;pointer-events:none;transition:opacity .2s}
+.toast.show{opacity:.95}
+@media(max-width:560px){main{padding:10px 0 70px}.phone{border-radius:0;border-left:0;border-right:0;box-shadow:none}.panel,.stat,.scroll{margin-left:10px;margin-right:10px}.stats,.dnav,.cols{margin-left:10px;margin-right:10px}.stats{margin-right:10px}.side{padding:0}}
+a.tab{display:block;text-align:center;text-decoration:none}</style>
+</head>
+<body>
+<div class="top"><div class="top-in">
+  <div class="brand"><div><b>予約デモ｜お客様画面（LINE）</b><br><small>お客様がLINEで予約する画面です。業種を切り替えて確認できます</small></div></div>
+  <div class="chips" id="chips"></div>
+  <div class="tabs" id="tabs"></div>
+</div></div>
+<main id="main"></main>
+<div class="toast" id="toast"></div>
+
+<script>
+/* ============ 業種ごとの設定（ここだけ差し替えれば横展開できる） ============ */
+const IND = {
+  sekkotsu:{label:'🏥 接骨院',shop:'すこやか接骨院',emoji:'🏥',color:'#2E86AB',open:9,close:18,closed:[0],
+    t:{reserve:'予約する',menuTitle:'施術メニューを選択',staffTitle:'担当者を選択',noPref:'どちらでも可',noteLabel:'症状・お悩み（任意）',notePh:'例：腰が痛くて前かがみになれません',msgBtn:'🏥 症状を送る',msgTitle:'症状・ご相談を送る',unit:'施術'},
+    staff:[{id:'a',name:'田中 院長',role:'柔道整復師',fee:0},{id:'b',name:'山田',role:'柔道整復師',fee:0}],
+    menus:[{id:'m1',name:'初診・保険施術',min:40,price:1500,desc:'問診＋施術。保険証をご持参ください'},{id:'m2',name:'骨盤矯正・整体',min:60,price:5500,desc:'全身のバランスを整えます'},{id:'m3',name:'鍼灸',min:45,price:4400,desc:'肩こり・腰痛・自律神経に'},{id:'m4',name:'楽トレ（EMS）',min:30,price:1100,desc:'インナーマッスル強化'}]},
+  beauty:{label:'💇 美容院',shop:'Hair Salon LUMINA',emoji:'💇',color:'#D6457A',open:10,close:19,closed:[2],
+    t:{reserve:'予約する',menuTitle:'メニューを選択',staffTitle:'スタイリストを指名',noPref:'指名なし',noteLabel:'ご要望・髪のお悩み（任意）',notePh:'例：前回より3cm短く、透明感のあるカラーにしたいです',msgBtn:'💬 ご要望を送る',msgTitle:'ご要望・ご相談を送る',unit:'施術'},
+    staff:[{id:'a',name:'佐藤 美咲',role:'トップスタイリスト',fee:1100},{id:'b',name:'鈴木 健太',role:'スタイリスト',fee:550},{id:'c',name:'高橋 ゆい',role:'スタイリスト',fee:0}],
+    menus:[{id:'m1',name:'カット',min:60,price:5500,desc:'シャンプー・ブロー込み'},{id:'m2',name:'カラー',min:90,price:8800,desc:'リタッチ／フルカラー'},{id:'m3',name:'カット＋カラー',min:120,price:13200,desc:'人気No.1セット'},{id:'m4',name:'パーマ',min:120,price:12100,desc:'デジタルパーマ対応'},{id:'m5',name:'縮毛矯正',min:150,price:16500,desc:'ダメージ軽減トリートメント付'},{id:'m6',name:'ヘッドスパ',min:45,price:4400,desc:'頭皮ケア・リラクゼーション'}]},
+  nail:{label:'💅 ネイル',shop:'Nail Salon Petit',emoji:'💅',color:'#8E5BC7',open:10,close:20,closed:[1],
+    t:{reserve:'予約する',menuTitle:'コースを選択',staffTitle:'ネイリストを指名',noPref:'指名なし',noteLabel:'デザインのご希望（任意）',notePh:'例：ワンカラー＋ラメ、参考画像は後でLINEに送ります',msgBtn:'💬 デザイン画像を送る',msgTitle:'デザイン画像・ご相談を送る',unit:'施術'},
+    staff:[{id:'a',name:'中村 あや',role:'チーフネイリスト',fee:550},{id:'b',name:'小林 りな',role:'ネイリスト',fee:0}],
+    menus:[{id:'m1',name:'ジェル（ハンド）',min:90,price:6600,desc:'ワンカラー〜定額デザイン'},{id:'m2',name:'ジェル（フット）',min:90,price:7700,desc:'フットケア付'},{id:'m3',name:'ハンド＋フット',min:150,price:13000,desc:'セット割引'},{id:'m4',name:'オフのみ',min:30,price:2200,desc:'他店オフもOK'},{id:'m5',name:'ケア＋ネイルケア',min:45,price:3300,desc:'甘皮ケア・形整え'}]},
+  esthe:{label:'🌿 エステ',shop:'Esthetic Salon Bloom',emoji:'🌿',color:'#1F9E89',open:10,close:20,closed:[3],
+    t:{reserve:'予約する',menuTitle:'コースを選択',staffTitle:'セラピストを指名',noPref:'指名なし',noteLabel:'肌・体のお悩み（任意）',notePh:'例：敏感肌です。ブライダル前の集中ケアを希望します',msgBtn:'💬 カウンセリング事前相談',msgTitle:'事前カウンセリングを送る',unit:'施術'},
+    staff:[{id:'a',name:'渡辺 さくら',role:'チーフセラピスト',fee:1100},{id:'b',name:'伊藤 まな',role:'セラピスト',fee:0}],
+    menus:[{id:'m1',name:'フェイシャル',min:60,price:8800,desc:'毛穴・くすみケア'},{id:'m2',name:'ボディトリートメント',min:90,price:13200,desc:'オールハンドで全身ケア'},{id:'m3',name:'ハーブピーリング',min:45,price:6600,desc:'ダウンタイムなし'},{id:'m4',name:'ブライダルコース',min:120,price:22000,desc:'挙式前の集中ケア'}]}
+};
+const NAMES=['佐々木','高橋','伊藤','渡辺','中村','小林','加藤','吉田','山本','松本','井上','木村','林','斎藤','清水'];
+const DOW=['日','月','火','水','木','金','土'];
+const pad=n=>String(n).padStart(2,'0'), fmt=m=>pad(Math.floor(m/60))+':'+pad(m%60);
+const dkey=d=>d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());
+const parse=k=>{const [y,m,d]=k.split('-').map(Number);return new Date(y,m-1,d)};
+const yen=n=>'¥'+n.toLocaleString('ja-JP');
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+function hs(s){let x=2166136261;for(let i=0;i<s.length;i++){x^=s.charCodeAt(i);x=Math.imul(x,16777619)}return x>>>0}
+const today=new Date();today.setHours(0,0,0,0);
+
+const S={ind:'beauty',screen:'home',menu:null,staff:'any',week:0,date:null,time:null,note:'',res:[],lastRes:null,name:''};
+const KEY='reserve_demo_v1';
+function load(){try{const j=JSON.parse(localStorage.getItem(KEY)||'{}');S.res=j.res||[];S.lastRes=j.lastRes||null;if(j.ind&&IND[j.ind])S.ind=j.ind;if(j.name!=null)S.name=j.name}catch(e){}}
+function save(){try{localStorage.setItem(KEY,JSON.stringify({res:S.res,lastRes:S.lastRes,ind:S.ind,name:S.name}))}catch(e){}}
+load();
+const I=()=>IND[S.ind];
+const getMenu=()=>I().menus.find(m=>m.id===S.menu);
+const staffOf=id=>I().staff.find(s=>s.id===id);
+
+/* ============ 空き枠ロジック（元システムの空き枠管理に相当） ============ */
+function busy(ik,sid,dk,m){
+  const dow=parse(dk).getDay();
+  if(hs(ik+'|'+sid+'|'+dk+'|'+m)%100<(dow===6||dow===0?46:27))return true;
+  return S.res.some(r=>r.ind===ik&&r.staff===sid&&r.date===dk&&m>=r.start&&m<r.start+r.dur);
+}
+function slotsFor(dk,menu,staffId){
+  const i=I();if(i.closed.includes(parse(dk).getDay()))return null;
+  const dur=Math.ceil(menu.min/30)*30,out=[],now=new Date(),nowM=now.getHours()*60+now.getMinutes(),isT=dk===dkey(now);
+  for(let m=i.open*60;m+dur<=i.close*60;m+=30){
+    if(isT&&m<=nowM+30)continue;
+    const cand=staffId==='any'?i.staff.map(s=>s.id):[staffId];
+    const f=cand.find(sid=>{for(let t=m;t<m+dur;t+=30)if(busy(S.ind,sid,dk,t))return false;return true});
+    if(f)out.push({start:m,staff:f});
+  }
+  return out;
+}
+function remindText(r){
+  const i=IND[r.ind],m=i.menus.find(x=>x.id===r.menu),d=parse(r.date),s=i.staff.find(x=>x.id===r.staff);
+  return `【${i.shop}】明日のご予約のお知らせ\n${r.name?r.name+' 様\n':''}\n📅 ${d.getMonth()+1}/${d.getDate()}（${DOW[d.getDay()]}）${fmt(r.start)}〜\n${i.emoji} ${m.name}（${m.min}分）\n👤 担当：${s.name}\n\nお待ちしております。ご都合が悪くなった場合は、LINEメニューの「キャンセル」からお手続きください。`;
+}
+
+function render(){
+  document.documentElement.style.setProperty('--c',I().color);
+  document.getElementById('chips').innerHTML=Object.keys(IND).map(k=>`<button class="chip ${k===S.ind?'on':''}" data-a="ind" data-v="${k}">${IND[k].label}</button>`).join('');
+  document.getElementById('tabs').innerHTML='<a class="tab on" href="customer.html">📱 お客様画面（LINE）</a><a class="tab " href="admin.html">🗂 管理画面（スタッフ用）</a>';
+  document.getElementById('main').innerHTML=customerHTML();
+}
+const BACK={menu:'home',staff:'menu',dt:'staff',confirm:'dt',done:'home',list:'home',msg:'home',sent:'home'};
+const STEPN=['メニュー','担当','日時','確認'];
+const steps=n=>`<div class="steps">${STEPN.map((s,i)=>`<div class="${i<n?'d':''}">${s}</div>`).join('')}</div>`;
+
+function customerHTML(){
+  const i=I(),t=i.t;let body='';
+  switch(S.screen){
+  case 'home':body=`<div class="bub">${S.name?esc(S.name)+' 様、いつもありがとうございます！🎉':'友だち追加ありがとうございます！🎉'}\n${esc(i.shop)}のLINE予約へようこそ。\n下のメニューから24時間いつでも予約できます。</div>
+    <div class="card"><div class="card-h">${i.emoji} ${esc(i.shop)} 予約メニュー</div><div class="card-b">
+    <button class="pbtn" data-a="go" data-v="menu">📅 ${t.reserve}</button>
+    <button class="pbtn g" data-a="go" data-v="list">📋 予約確認</button>
+    <button class="pbtn r" data-a="go" data-v="list">❌ キャンセル</button>
+    <button class="pbtn v" data-a="go" data-v="msg">${t.msgBtn}</button></div></div>`;break;
+  case 'menu':body=`${steps(0)}<div class="bub">${t.menuTitle}してください</div>`+i.menus.map(m=>`<button class="item ${S.menu===m.id?'on':''}" data-a="menu" data-v="${m.id}"><span><b>${esc(m.name)}</b><small>${m.min}分 ・ ${esc(m.desc)}</small></span><span class="price">${yen(m.price)}</span></button>`).join('');break;
+  case 'staff':body=`${steps(1)}<div class="bub">${t.staffTitle}してください</div>
+    <button class="item ${S.staff==='any'?'on':''}" data-a="staff" data-v="any"><span><b>${t.noPref}</b><small>空いているスタッフを自動で割り当て</small></span><span class="tag">空き優先</span></button>`+
+    i.staff.map(s=>`<button class="item ${S.staff===s.id?'on':''}" data-a="staff" data-v="${s.id}"><span><b>${esc(s.name)}</b><small>${esc(s.role)}</small></span><span class="price">${s.fee?'指名料 '+yen(s.fee):'指名料なし'}</span></button>`).join('');break;
+  case 'dt':body=dtHTML();break;
+  case 'confirm':{const m=getMenu(),s=S.staff==='any'?null:staffOf(S.staff),d=parse(S.date),sl=slotsFor(S.date,m,S.staff).find(x=>x.start===S.time),as=staffOf(sl.staff),tot=m.price+(s?s.fee:0);
+    body=`${steps(3)}<div class="bub">以下の内容で予約します。よろしいですか？</div><div class="card"><div class="card-b">
+    <div class="sum"><span>日時</span><b>${d.getMonth()+1}月${d.getDate()}日（${DOW[d.getDay()]}）${fmt(S.time)}〜${fmt(S.time+m.min)}</b>
+    <span>メニュー</span><b>${esc(m.name)}（${m.min}分）</b><span>担当</span><b>${S.staff==='any'?t.noPref+'（'+esc(as.name)+'）':esc(s.name)}</b><span>料金目安</span><b>${yen(tot)}</b></div>
+    <label class="l">お名前（必須・一度入力すると次回から自動入力）</label><input type="text" data-a="name" value="${esc(S.name)}" placeholder="例：山田 花子" autocomplete="name" style="width:100%;border:1.5px solid var(--line);border-radius:10px;padding:10px;font:inherit">
+    <label class="l">${t.noteLabel}</label><textarea data-a="note" placeholder="${esc(t.notePh)}">${esc(S.note)}</textarea>
+    <button class="pbtn" data-a="book">この内容で予約を確定する</button></div></div>`;break}
+  case 'done':{const r=S.lastRes,d=parse(r.date);
+    body=`<div class="card"><div class="card-b"><div class="ok">✅</div><b style="text-align:center;font-size:16px">予約が完了しました</b>
+    <div class="sum"><span>予約ID</span><b>${r.id}</b><span>日時</span><b>${d.getMonth()+1}/${d.getDate()}（${DOW[d.getDay()]}）${fmt(r.start)}〜</b></div></div></div>
+    <div class="mini" style="text-align:center">▼ 前日18:00に自動送信されるリマインド</div><div class="bub">${esc(remindText(r))}</div>
+    <a class="pbtn ghost" style="display:block;text-decoration:none" href="admin.html">管理画面での見え方を確認 →</a>`;break}
+  case 'list':{const L=S.res.filter(r=>r.ind===S.ind);
+    body=`<div class="bub">${L.length?'現在のご予約です。変更・キャンセルはこちらから。':'現在ご予約はありません。\n「予約する」からお申し込みください。'}</div>`+
+    L.map(r=>{const m=i.menus.find(x=>x.id===r.menu),d=parse(r.date);return `<div class="card"><div class="card-b"><b>${d.getMonth()+1}/${d.getDate()}（${DOW[d.getDay()]}）${fmt(r.start)}〜</b><div class="mini">${esc(m.name)} ／ ${esc(staffOf(r.staff).name)} ／ ${r.id}</div><button class="pbtn r" data-a="cancel" data-v="${r.id}">この予約をキャンセル</button></div></div>`}).join('')+
+    `<button class="pbtn" data-a="go" data-v="menu">📅 新しく予約する</button>`;break}
+  case 'msg':body=`<div class="bub">${t.msgTitle}</div><div class="card"><div class="card-b"><textarea id="msgbox" placeholder="${esc(t.notePh)}"></textarea><button class="pbtn v" data-a="sendmsg">送信する</button></div></div>`;break;
+  case 'sent':body=`<div class="bub">メッセージを受け付けました。\nスタッフが確認のうえ、このトークでご返信します。</div><button class="pbtn ghost" data-a="go" data-v="home">メニューに戻る</button>`;break;
+  }
+  const side=`<div class="side"><div class="panel"><h3>${i.emoji} このデモで試せること</h3><ul>
+    <li>左の画面を <b>LINEのトーク画面</b> として操作できます（予約→確認→キャンセル）</li>
+    <li>空き枠は <b>メニュー所要時間・担当者</b> に応じて自動計算（例：カット60分なら2枠連続で空きが必要）</li>
+    <li>予約すると、管理画面（admin.html）に反映されます（同じ場所に置いた場合）</li></ul></div>
+    <div class="panel"><h3>${esc(i.shop)} の設定値</h3><ul><li>営業 ${i.open}:00〜${i.close}:00 ／ 定休日：${i.closed.map(d=>DOW[d]).join('・')}曜</li><li>メニュー ${i.menus.length}種 ／ 担当 ${i.staff.length}名（指名可）</li><li>枠の単位：30分</li></ul></div></div>`;
+  return `<div class="stage"><div class="phone"><div class="lbar"><button class="back" data-a="back">${S.screen==='home'?'':'‹'}</button><div class="av">${i.emoji}</div><div><b>${esc(i.shop)}</b><small>LINE公式アカウント</small></div></div><div class="chat">${body}</div></div>${side}</div>`;
+}
+function dtHTML(){
+  const m=getMenu(),base=new Date(today);base.setDate(base.getDate()+S.week*7);
+  let days='';
+  for(let k=0;k<7;k++){const d=new Date(base);d.setDate(d.getDate()+k);const dk=dkey(d),sl=slotsFor(dk,m,S.staff),n=sl?sl.length:0,mark=!sl?'休':n===0?'×':n<6?'△':'◎';
+    const c=d.getDay()===0?'sun':d.getDay()===6?'sat':'';
+    days+=`<button class="day ${S.date===dk?'on':''}" ${n?'':'disabled'} data-a="date" data-v="${dk}"><span class="${c}">${DOW[d.getDay()]}</span><b>${d.getDate()}</b><i>${mark}</i></button>`}
+  let times='<div class="mini">日付を選んでください</div>';
+  if(S.date){const sl=slotsFor(S.date,m,S.staff)||[];times=sl.length?`<div class="times">${sl.map(x=>`<button class="tm ${S.time===x.start?'on':''}" data-a="time" data-v="${x.start}">${fmt(x.start)}</button>`).join('')}</div>`:'<div class="mini">空きがありません</div>'}
+  return `${steps(2)}<div class="bub">ご希望の日時を選んでください（${esc(m.name)} ${m.min}分）</div>
+   <div class="wk"><button data-a="wk" data-v="-1" ${S.week<=0?'disabled':''}>‹ 前の週</button><span>${base.getMonth()+1}月${base.getDate()}日〜</span><button data-a="wk" data-v="1" ${S.week>=3?'disabled':''}>次の週 ›</button></div>
+   <div class="week">${days}</div>${times}
+   <button class="pbtn" data-a="tocon" ${S.time!=null?'':'disabled'}>次へ：内容を確認</button>`;
+}
+
+function toast(t){const e=document.getElementById('toast');e.textContent=t;e.classList.add('show');clearTimeout(toast.h);toast.h=setTimeout(()=>e.classList.remove('show'),1800)}
+function resetFlow(){S.screen='home';S.menu=null;S.staff='any';S.week=0;S.date=null;S.time=null;S.note=''}
+document.addEventListener('click',e=>{
+  const b=e.target.closest('[data-a]');if(!b||b.tagName==='TEXTAREA'||b.tagName==='INPUT')return;const a=b.dataset.a,v=b.dataset.v;
+  switch(a){
+  case 'ind':S.ind=v;resetFlow();save();break;
+  case 'go':S.screen=v;break;
+  case 'back':S.screen=BACK[S.screen]||'home';break;
+  case 'menu':S.menu=v;S.date=null;S.time=null;S.screen='staff';break;
+  case 'staff':S.staff=v;S.date=null;S.time=null;S.screen='dt';break;
+  case 'wk':S.week+=+v;break;
+  case 'date':S.date=v;S.time=null;break;
+  case 'time':S.time=+v;break;
+  case 'tocon':S.screen='confirm';break;
+  case 'book':{if(!S.name.trim()){toast('お名前を入力してください');return}S.name=S.name.trim();load2();const m=getMenu(),sl=slotsFor(S.date,m,S.staff),s=sl&&sl.find(x=>x.start===S.time);
+    if(!s){toast('この時間は埋まりました。別の時間をお選びください');S.screen='dt';S.time=null;break}
+    const st=S.staff==='any'?null:staffOf(S.staff),r={id:'R'+S.date.replace(/-/g,'')+'-D'+pad(S.res.length+1),ind:S.ind,menu:m.id,staff:s.staff,date:S.date,start:S.time,dur:Math.ceil(m.min/30)*30,name:S.name,note:S.note,price:m.price+(st?st.fee:0)};
+    S.res.push(r);S.lastRes=r;save();S.screen='done';break}
+  case 'cancel':S.res=S.res.filter(r=>r.id!==v);save();toast('キャンセルしました（枠は自動で空きに戻ります）');break;
+  case 'sendmsg':S.screen='sent';break;
+  }
+  render();window.scrollTo({top:0});
+});
+document.addEventListener('input',e=>{const a=e.target.dataset&&e.target.dataset.a;if(a==='note')S.note=e.target.value;if(a==='name'){S.name=e.target.value;save()}});
+/* 管理画面側で変更された内容（キャンセル等）を取り込む */
+function load2(){const keep=S.name,ind=S.ind;load();S.name=keep;S.ind=ind}
+render();
+</script>
+</body>
+</html>
