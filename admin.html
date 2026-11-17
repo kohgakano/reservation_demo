@@ -140,6 +140,9 @@ const KEY='reserve_demo_v1';
 function load(){try{const j=JSON.parse(localStorage.getItem(KEY)||'{}');S.res=j.res||[];S.lastRes=j.lastRes||null;if(j.ind&&IND[j.ind])S.ind=j.ind;if(j.name!=null)S.name=j.name}catch(e){}}
 function save(){try{localStorage.setItem(KEY,JSON.stringify({res:S.res,lastRes:S.lastRes,ind:S.ind,name:S.name}))}catch(e){}}
 load();
+let seenId=null;
+function jumpLast(){if(S.lastRes&&S.lastRes.id!==seenId){seenId=S.lastRes.id;S.adate=S.lastRes.date}}
+jumpLast();
 const I=()=>IND[S.ind];
 const getMenu=()=>I().menus.find(m=>m.id===S.menu);
 const staffOf=id=>I().staff.find(s=>s.id===id);
@@ -211,7 +214,7 @@ document.addEventListener('click',e=>{
   render();
 });
 /* お客様画面で予約が入ったら自動で更新 */
-function sync(){const ind=S.ind;load();render()}
+function sync(){load();jumpLast();render()}
 window.addEventListener('storage',sync);window.addEventListener('focus',sync);document.addEventListener('visibilitychange',()=>{if(!document.hidden)sync()});
 render();
 </script>
